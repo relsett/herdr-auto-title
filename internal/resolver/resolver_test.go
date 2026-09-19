@@ -34,6 +34,72 @@ func tabWithCWD(dir string) state.TabState {
 	})
 }
 
+func TestTitleOnlyOmitsDecoration(t *testing.T) {
+	r := Default(Options{TitleOnly: true})
+
+	for _, tc := range []struct{ title, want string }{
+		{"Add authentication | dashboard", "Add authentication"},
+		{"\"Add authentication\" | dashboard", "Add authentication"},
+		{"Parse A | B", "Parse A | B"},
+		{"Compare API | dashboard | dashboard", "Compare API | dashboard"},
+		{"dashboard", "dashboard"},
+	} {
+		t.Run(tc.title, func(t *testing.T) {
+			pane := &state.PaneState{Dir: dashboard, Agent: "codex", TerminalTitle: tc.title}
+
+			got := r.Resolve(tabOf([]*state.PaneState{pane})).Name
+			if got != tc.want {
+				t.Fatalf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+
+	if got := r.Resolve(tabWithCWD(dashboard)).Name; got != GenericFallback {
+		t.Fatalf("shell leaked directory: %q", got)
+	}
+}
+
+func TestTitleOnlyPreservesActualThreadTitles(t *testing.T) {
+	r := Default(Options{TitleOnly: true})
+
+	const title = "Compare API | dashboard"
+	for _, tc := range []struct {
+		name string
+		pane state.PaneState
+	}{
+		{"agent title", state.PaneState{Agent: "codex", AgentTitle: title}},
+		{"transcript topic", state.PaneState{Agent: "codex", AgentTopic: title}},
+		{"Claude terminal title", state.PaneState{Agent: "claude", TerminalTitle: title}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.pane.Dir = dashboard
+			if got := r.Resolve(tabOf([]*state.PaneState{&tc.pane})).Name; got != title {
+				t.Fatalf("got %q, want %q", got, title)
+			}
+		})
+	}
+}
+
+func TestTitleOnlyFallbacks(t *testing.T) {
+	r := Default(Options{TitleOnly: true})
+
+	for _, tc := range []struct {
+		name string
+		pane *state.PaneState
+		want string
+	}{
+		{"agent without title", &state.PaneState{Dir: dashboard, Agent: "codex"}, "New thread"},
+		{"shell", &state.PaneState{Dir: dashboard}, GenericFallback},
+		{"no pane", nil, GenericFallback},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := r.Resolve(state.TabState{Context: tc.pane}).Name; got != tc.want {
+				t.Fatalf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestResolveFromCWD(t *testing.T) {
 	home := t.TempDir()
 	source := CWD{home: filepath.Clean(home)}

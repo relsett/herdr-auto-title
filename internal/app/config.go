@@ -26,6 +26,7 @@ const (
 	EnvAgentName   = "HERDR_AUTO_TITLE_AGENT_NAME"
 	EnvPanes       = "HERDR_AUTO_TITLE_PANES"
 	EnvPreferAgent = "HERDR_AUTO_TITLE_PREFER_AGENT"
+	EnvTitleOnly   = "HERDR_AUTO_TITLE_TITLE_ONLY"
 )
 
 // DefaultPoll is how often the session is read. A six-pane snapshot measured
@@ -64,6 +65,8 @@ type Config struct {
 	// PreferAgentPane names a tab after its agent pane even when another pane
 	// is focused, so opening an editor beside the agent leaves the title alone.
 	PreferAgentPane bool
+	// TitleOnly omits context, branch, agent and position decorations.
+	TitleOnly bool
 }
 
 // LoadConfig reads configuration from the configuration file and the
@@ -96,6 +99,7 @@ func LoadConfig() (Config, []string) {
 	cfg.ShowAgentName = fromEnv(&warnings, EnvAgentName, cfg.ShowAgentName, boolean)
 	cfg.RenamePanes = fromEnv(&warnings, EnvPanes, cfg.RenamePanes, boolean)
 	cfg.PreferAgentPane = fromEnv(&warnings, EnvPreferAgent, cfg.PreferAgentPane, boolean)
+	cfg.TitleOnly = fromEnv(&warnings, EnvTitleOnly, cfg.TitleOnly, boolean)
 	// A path needs neither parsing nor checking, so it does not go through
 	// fromEnv: any string the user set is the path they meant, and an empty
 	// one asks for locks that do not outlive the process.

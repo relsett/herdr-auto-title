@@ -26,7 +26,7 @@ func isolate(t *testing.T) {
 
 	names := []string{
 		EnvDebug, EnvPoll, EnvMaxLength, EnvBranchMax,
-		EnvPosition, EnvManual, EnvTranscript, EnvAgentName, EnvPanes,
+		EnvPosition, EnvManual, EnvTranscript, EnvAgentName, EnvPanes, EnvTitleOnly,
 	}
 
 	for _, name := range names {
@@ -55,6 +55,16 @@ func writeConfig(t *testing.T, contents string) {
 	}
 }
 
+func TestLoadConfigTitleOnly(t *testing.T) {
+	isolate(t)
+	writeConfig(t, EnvTitleOnly+"=true\n")
+
+	cfg, warnings := LoadConfig()
+	if !cfg.TitleOnly || len(warnings) != 0 {
+		t.Fatalf("title-only mode not loaded: %v, %v", cfg.TitleOnly, warnings)
+	}
+}
+
 func TestLoadConfigDefaults(t *testing.T) {
 	isolate(t)
 
@@ -65,6 +75,10 @@ func TestLoadConfigDefaults(t *testing.T) {
 
 	if cfg.Debug {
 		t.Error("debug is on by default")
+	}
+
+	if cfg.TitleOnly {
+		t.Error("title-only mode is on by default")
 	}
 
 	if cfg.Poll != DefaultPoll {

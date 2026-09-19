@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"cmp"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -121,6 +122,7 @@ type Options struct {
 	// way round so that the zero value keeps the name, which is what a resolver
 	// built without options wants.
 	HideAgentName bool
+	TitleOnly     bool
 }
 
 // Deterministic resolves titles from a fixed priority list of sources.
@@ -128,6 +130,7 @@ type Deterministic struct {
 	sources       []Source
 	maxLength     int
 	hideAgentName bool
+	titleOnly     bool
 }
 
 var (
@@ -151,6 +154,7 @@ func New(opts Options, sources ...Source) *Deterministic {
 		sources:       ordered,
 		maxLength:     opts.MaxLength,
 		hideAgentName: opts.HideAgentName,
+		titleOnly:     opts.TitleOnly,
 	}
 }
 
@@ -248,7 +252,53 @@ func (d *Deterministic) collect(pane *state.PaneState) collected {
 		found.parts.Agent = ""
 	}
 
+	if d.titleOnly {
+		activity := ""
+		if pane.HasAgent() {
+			activity = threadTitle(pane, found)
+			if activity == "" {
+				activity = "New thread"
+			}
+		}
+
+		found.parts = Parts{Activity: activity}
+	}
+
 	return found
+}
+
+// Codex decorates terminal titles with a directory; actual thread titles do not.
+func threadTitle(pane *state.PaneState, found collected) string {
+	title := trimTitleQuotes(found.parts.Activity)
+	if pane.Agent != "codex" || found.reason != "terminal_title" {
+		return title
+	}
+
+	for _, dir := range []string{found.parts.Context, pane.Dir, pane.AgentDir} {
+		if dir == "" {
+			continue
+		}
+
+		if trimmed, ok := strings.CutSuffix(title, " | "+filepath.Base(dir)); ok {
+			return trimTitleQuotes(trimmed)
+		}
+	}
+
+	return title
+}
+
+func trimTitleQuotes(title string) string {
+	title = strings.TrimSpace(title)
+	for _, pair := range [][2]string{{"\"", "\""}, {"'", "'"}, {"`", "`"}, {"\u00ab", "\u00bb"}, {"\u201c", "\u201d"}} {
+		if len(title) >= len(pair[0])+len(pair[1]) && strings.HasPrefix(title, pair[0]) &&
+			strings.HasSuffix(title, pair[1]) {
+			return strings.TrimSpace(
+				strings.TrimSuffix(strings.TrimPrefix(title, pair[0]), pair[1]),
+			)
+		}
+	}
+
+	return title
 }
 
 // take fills whatever this source supplies and nothing already has.

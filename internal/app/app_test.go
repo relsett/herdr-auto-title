@@ -20,6 +20,20 @@ import (
 
 const testPoll = 10 * time.Millisecond
 
+func TestTitleOnlyOverridesPosition(t *testing.T) {
+	cfg := testConfig()
+	cfg.TitleOnly = true
+	cfg.ShowPosition = true
+	cfg.ShowAgentName = true
+	titles, _ := Resolvers(cfg)
+	pane := &state.PaneState{Dir: dashboard, Agent: "codex", AgentTitle: "Fix authentication"}
+
+	tab := state.TabState{Context: pane, Position: 3}
+	if got := titles.Resolve(tab).Name; got != "Fix authentication" {
+		t.Fatalf("title = %q, want only the thread title", got)
+	}
+}
+
 // The directories the fixtures sit in, absolute on whichever platform the
 // tests run on: a relative directory names no tab, and Windows has no /Users.
 var (

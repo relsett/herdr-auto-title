@@ -10,6 +10,10 @@
   </p>
 </div>
 
+This is the [relsett/herdr-auto-title](https://github.com/relsett/herdr-auto-title)
+fork with an optional thread-title-only mode. See [FORK.md](FORK.md) for its
+changes and update policy; install this fork to keep those changes.
+
 A [Herdr](https://herdr.dev) plugin that names your tabs and panes after the
 work in them. It reads the session twice a second, and it leaves alone any tab
 or pane you rename yourself.
@@ -22,7 +26,7 @@ You need Herdr 0.8.2+ and Go 1.24+ on macOS, Linux or Windows. Herdr builds the
 plugin from source when it installs it.
 
 ```sh
-herdr plugin install kryptamine/herdr-auto-title
+herdr plugin install relsett/herdr-auto-title
 herdr server stop   # closes the session; `herdr` brings it back
 ```
 
@@ -95,6 +99,13 @@ change. It does not read the config directory that `herdr plugin list` prints.
 | `HERDR_AUTO_TITLE_AGENT_NAME`   | `true`                                   | Put the agent's name in front of what it is doing                  |
 | `HERDR_AUTO_TITLE_PANES`        | `true`                                   | Name panes as well as tabs                                         |
 | `HERDR_AUTO_TITLE_PREFER_AGENT` | `false`                                  | Name a tab after its agent pane even while another pane is focused |
+| `HERDR_AUTO_TITLE_TITLE_ONLY`   | `false`                                  | Use only the thread title; omit position, directory, branch and agent |
+
+`HERDR_AUTO_TITLE_TITLE_ONLY=true` removes surrounding title quotes and one
+known directory suffix from Codex terminal titles. Actual agent titles and
+transcript topics keep their text. An agent without a usable title is named
+`New thread`; a pane without an agent is named `Shell`. This mode also applies
+to pane names and overrides `HERDR_AUTO_TITLE_POSITION`.
 
 Turning `HERDR_AUTO_TITLE_TRANSCRIPT` off also drops the branch from a tab whose
 agent is working in a git worktree, because the transcript is what says which

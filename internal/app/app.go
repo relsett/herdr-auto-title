@@ -72,10 +72,11 @@ func Resolvers(cfg Config) (resolver.TitleResolver, resolver.PaneResolver) {
 		MaxLength:     cfg.MaxLength,
 		BranchMax:     cfg.BranchMax,
 		HideAgentName: !cfg.ShowAgentName,
+		TitleOnly:     cfg.TitleOnly,
 	})
 
 	var titles resolver.TitleResolver = chain
-	if cfg.ShowPosition {
+	if cfg.ShowPosition && !cfg.TitleOnly {
 		titles = resolver.NewNumbered(chain, cfg.MaxLength)
 	}
 

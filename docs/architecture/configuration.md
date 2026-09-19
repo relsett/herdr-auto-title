@@ -9,7 +9,7 @@ generated: { by: claude-code/opus-5, at: 2026-08-26T14:14:17+03:00 }
 
 # Configuration
 
-Every setting Auto Title has is one of ten `HERDR_AUTO_TITLE_*` variables,
+Every setting Auto Title has is a `HERDR_AUTO_TITLE_*` variable,
 read in `internal/app/config.go`. They can be set in the environment, or written
 into a file that is loaded into the environment before anything reads it.
 
@@ -151,6 +151,16 @@ splits, but from a floor too low to decide a default by.
 The setting decides one thing only: whether `App` holds a pane resolver at all.
 Everything below that — which pane is read, how it is named, whether the user
 has claimed it — is the same code either way.
+
+## Thread titles without decorations
+
+`HERDR_AUTO_TITLE_TITLE_ONLY` defaults to `false`. When enabled, the resolver
+keeps only the agent's activity and the app omits the position wrapper. Context,
+branch and agent name disappear; outer title quotes are removed. Only Codex
+terminal titles lose one matching ` | <directory>` suffix, because agent titles
+and transcript topics already contain the actual topic. An agent with no title
+uses `New thread`, and a non-agent pane uses `Shell`. Existing source priority,
+length limits and manual rename protection still apply.
 
 ## Why it is not reread
 
