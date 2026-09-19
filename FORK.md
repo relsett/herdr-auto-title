@@ -28,3 +28,6 @@ Develop on a feature branch, fetch upstream separately, and review its changes
 before merging them. Run `make check` before publishing. Push tested changes to
 this fork's main branch, reinstall from it, and check live tab names. Restart
 only this plugin when applying an update; do not stop Herdr or its agents.
+
+The existing GitHub CI can also be run manually from the Actions tab.
+Automatic release PRs are disabled in this personal fork; upstream versions remain unchanged.
